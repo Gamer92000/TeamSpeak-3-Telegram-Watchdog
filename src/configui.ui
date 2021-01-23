@@ -46,7 +46,7 @@
      <x>0</x>
      <y>0</y>
      <width>443</width>
-     <height>462</height>
+     <height>291</height>
     </rect>
    </property>
    <layout class="QVBoxLayout" name="verticalLayout_2">
@@ -212,271 +212,29 @@ p, li { white-space: pre-wrap; }
      </widget>
     </item>
     <item>
-     <widget class="QLabel" name="label_8">
-      <property name="sizePolicy">
-       <sizepolicy hsizetype="MinimumExpanding" vsizetype="MinimumExpanding">
-        <horstretch>0</horstretch>
-        <verstretch>0</verstretch>
-       </sizepolicy>
+     <layout class="QHBoxLayout" name="horizontalLayout_5">
+      <property name="topMargin">
+       <number>0</number>
       </property>
-      <property name="font">
-       <font>
-        <pointsize>9</pointsize>
-        <kerning>true</kerning>
-       </font>
-      </property>
-      <property name="toolTip">
-       <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;The first column of tick boxes enables or disables messages on any event.&lt;br/&gt;The following columns can be used to toggle under which conditions a message shall be sent.&lt;/p&gt;&lt;p&gt;always&lt;br/&gt;a message is always sent no matter the conditions.&lt;/p&gt;&lt;p&gt;muted&lt;br/&gt;a message is sent when you are muted.&lt;/p&gt;&lt;p&gt;sound&lt;br/&gt;a message is sent when you are sound muted.&lt;br/&gt;&lt;/p&gt;&lt;p&gt;afk&lt;br/&gt;a message is sent when you are afk.&lt;br/&gt;&lt;/p&gt;&lt;p&gt;Microphone muted and disabled is treated the same way for now.&lt;br/&gt;Sound muted and disabled is treated the same for now.&lt;br/&gt;All conditions are compared with a locical or. &lt;br/&gt;This means hitting one condition is enough to send a notification.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
-      </property>
-      <property name="text">
-       <string>Notification Matrix</string>
-      </property>
-     </widget>
-    </item>
-    <item>
-     <layout class="QGridLayout" name="gridLayout_2">
-      <property name="sizeConstraint">
-       <enum>QLayout::SetMinimumSize</enum>
-      </property>
-      <property name="spacing">
-       <number>15</number>
-      </property>
-      <item row="1" column="4">
-       <widget class="QCheckBox" name="poke2">
-        <property name="text">
-         <string/>
-        </property>
-       </widget>
-      </item>
-      <item row="3" column="4">
-       <widget class="QCheckBox" name="channel2">
-        <property name="text">
-         <string/>
-        </property>
-       </widget>
-      </item>
-      <item row="4" column="5">
-       <widget class="QCheckBox" name="server3">
-        <property name="text">
-         <string/>
-        </property>
-       </widget>
-      </item>
-      <item row="2" column="5">
-       <widget class="QCheckBox" name="priv3">
-        <property name="text">
-         <string/>
-        </property>
-       </widget>
-      </item>
-      <item row="0" column="4">
-       <widget class="QLabel" name="label_4">
-        <property name="toolTip">
-         <string>Notifies you when you are muted</string>
-        </property>
-        <property name="text">
-         <string>muted</string>
-        </property>
-       </widget>
-      </item>
-      <item row="3" column="3">
-       <widget class="QCheckBox" name="channel1">
-        <property name="text">
-         <string/>
-        </property>
-       </widget>
-      </item>
-      <item row="4" column="2">
-       <widget class="QCheckBox" name="serverEnable">
-        <property name="sizePolicy">
-         <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
-          <horstretch>0</horstretch>
-          <verstretch>0</verstretch>
-         </sizepolicy>
-        </property>
-        <property name="text">
-         <string>Server Message</string>
-        </property>
-       </widget>
-      </item>
-      <item row="2" column="3">
-       <widget class="QCheckBox" name="priv1">
-        <property name="text">
-         <string/>
-        </property>
-       </widget>
-      </item>
-      <item row="2" column="2">
-       <widget class="QCheckBox" name="privateEnable">
-        <property name="sizePolicy">
-         <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
-          <horstretch>0</horstretch>
-          <verstretch>0</verstretch>
-         </sizepolicy>
-        </property>
-        <property name="text">
-         <string>Private Message</string>
-        </property>
-       </widget>
-      </item>
-      <item row="3" column="2">
-       <widget class="QCheckBox" name="channelEnable">
-        <property name="sizePolicy">
-         <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
-          <horstretch>0</horstretch>
-          <verstretch>0</verstretch>
-         </sizepolicy>
-        </property>
-        <property name="text">
-         <string>Channel Message</string>
-        </property>
-       </widget>
-      </item>
-      <item row="0" column="5">
-       <widget class="QLabel" name="label_5">
-        <property name="toolTip">
-         <string>Notifies you when you are silent</string>
-        </property>
-        <property name="text">
-         <string>silent</string>
-        </property>
-       </widget>
-      </item>
-      <item row="0" column="3">
+      <item>
        <widget class="QLabel" name="label_3">
-        <property name="toolTip">
-         <string>Notifies you always</string>
+        <property name="font">
+         <font>
+          <pointsize>9</pointsize>
+         </font>
         </property>
         <property name="text">
-         <string>always</string>
+         <string>Channels 2 Watch</string>
         </property>
        </widget>
       </item>
-      <item row="2" column="6">
-       <widget class="QCheckBox" name="priv4">
-        <property name="text">
-         <string/>
-        </property>
-       </widget>
-      </item>
-      <item row="1" column="6">
-       <widget class="QCheckBox" name="poke4">
-        <property name="text">
-         <string/>
-        </property>
-       </widget>
-      </item>
-      <item row="1" column="3">
-       <widget class="QCheckBox" name="poke1">
-        <property name="text">
-         <string/>
-        </property>
-       </widget>
-      </item>
-      <item row="3" column="5">
-       <widget class="QCheckBox" name="channel3">
-        <property name="text">
-         <string/>
-        </property>
-       </widget>
-      </item>
-      <item row="3" column="6">
-       <widget class="QCheckBox" name="channel4">
-        <property name="text">
-         <string/>
-        </property>
-       </widget>
-      </item>
-      <item row="4" column="3">
-       <widget class="QCheckBox" name="server1">
-        <property name="text">
-         <string/>
-        </property>
-       </widget>
-      </item>
-      <item row="2" column="4">
-       <widget class="QCheckBox" name="priv2">
-        <property name="text">
-         <string/>
-        </property>
-       </widget>
-      </item>
-      <item row="4" column="4">
-       <widget class="QCheckBox" name="server2">
-        <property name="text">
-         <string/>
-        </property>
-       </widget>
-      </item>
-      <item row="1" column="5">
-       <widget class="QCheckBox" name="poke3">
-        <property name="text">
-         <string/>
-        </property>
-       </widget>
-      </item>
-      <item row="0" column="6">
-       <widget class="QLabel" name="label_6">
-        <property name="toolTip">
-         <string>Notifies you when you are afk</string>
-        </property>
-        <property name="text">
-         <string>afk</string>
-        </property>
-       </widget>
-      </item>
-      <item row="4" column="6">
-       <widget class="QCheckBox" name="server4">
-        <property name="text">
-         <string/>
-        </property>
-       </widget>
-      </item>
-      <item row="1" column="2">
-       <widget class="QCheckBox" name="pokeEnable">
-        <property name="sizePolicy">
-         <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
-          <horstretch>0</horstretch>
-          <verstretch>0</verstretch>
-         </sizepolicy>
-        </property>
-        <property name="text">
-         <string>Poke</string>
-        </property>
-        <property name="checked">
-         <bool>false</bool>
-        </property>
-       </widget>
+      <item>
+       <widget class="QLineEdit" name="channels2Watch"/>
       </item>
      </layout>
     </item>
     <item>
      <widget class="Line" name="line">
-      <property name="minimumSize">
-       <size>
-        <width>0</width>
-        <height>0</height>
-       </size>
-      </property>
-      <property name="orientation">
-       <enum>Qt::Horizontal</enum>
-      </property>
-     </widget>
-    </item>
-    <item>
-     <widget class="QCheckBox" name="ignoreSelf">
-      <property name="font">
-       <font>
-        <pointsize>9</pointsize>
-       </font>
-      </property>
-      <property name="text">
-       <string>Ignore Own Actions</string>
-      </property>
-     </widget>
-    </item>
-    <item>
-     <widget class="Line" name="line_3">
       <property name="minimumSize">
        <size>
         <width>0</width>
@@ -513,27 +271,21 @@ p, li { white-space: pre-wrap; }
      </widget>
     </item>
     <item>
-     <widget class="Line" name="line_4">
-      <property name="minimumSize">
-       <size>
-        <width>0</width>
-        <height>0</height>
-       </size>
-      </property>
+     <widget class="Line" name="line_3">
       <property name="orientation">
        <enum>Qt::Horizontal</enum>
       </property>
      </widget>
     </item>
     <item>
-     <widget class="QCheckBox" name="responses">
+     <widget class="QCheckBox" name="forced">
       <property name="font">
        <font>
         <pointsize>9</pointsize>
        </font>
       </property>
       <property name="text">
-       <string>Responses</string>
+       <string>Ignore Forced Joins</string>
       </property>
      </widget>
     </item>
@@ -615,7 +367,7 @@ p, li { white-space: pre-wrap; }
          </font>
         </property>
         <property name="text">
-         <string>Telegram Bridge by &lt;a href=&quot;https://julianimhof.de&quot;&gt;Gamer92000&lt;/a&gt;</string>
+         <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Telegram Watchdog by &lt;a href=&quot;https://julianimhof.de&quot;&gt;&lt;span style=&quot; text-decoration: underline; color:#0000ff;&quot;&gt;Gamer92000&lt;/span&gt;&lt;/a&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
         </property>
         <property name="textFormat">
          <enum>Qt::RichText</enum>
@@ -681,29 +433,7 @@ p, li { white-space: pre-wrap; }
  <tabstops>
   <tabstop>BotTokenInput</tabstop>
   <tabstop>ChatIDInput</tabstop>
-  <tabstop>pokeEnable</tabstop>
-  <tabstop>poke1</tabstop>
-  <tabstop>poke2</tabstop>
-  <tabstop>poke3</tabstop>
-  <tabstop>poke4</tabstop>
-  <tabstop>privateEnable</tabstop>
-  <tabstop>priv1</tabstop>
-  <tabstop>priv2</tabstop>
-  <tabstop>priv3</tabstop>
-  <tabstop>priv4</tabstop>
-  <tabstop>channelEnable</tabstop>
-  <tabstop>channel1</tabstop>
-  <tabstop>channel2</tabstop>
-  <tabstop>channel3</tabstop>
-  <tabstop>channel4</tabstop>
-  <tabstop>serverEnable</tabstop>
-  <tabstop>server1</tabstop>
-  <tabstop>server2</tabstop>
-  <tabstop>server3</tabstop>
-  <tabstop>server4</tabstop>
-  <tabstop>ignoreSelf</tabstop>
   <tabstop>greetings</tabstop>
-  <tabstop>responses</tabstop>
   <tabstop>pbOk</tabstop>
   <tabstop>pbCancel</tabstop>
  </tabstops>

@@ -51,8 +51,21 @@ static char* pluginID = NULL;
 config* pConf;
 update* upd;
 Communicator* comm;
-std::thread run;
 std::future<void> a3;
+
+using namespace std;
+
+vector<string> split(const string& s, char delim) {
+	vector<string> result;
+	stringstream ss(s);
+	string item;
+
+	while (getline(ss, item, delim)) {
+		result.push_back(item);
+	}
+
+	return result;
+}
 
 #ifdef _WIN32
 /* Helper function to convert wchar_T to Utf-8 encoded strings on Windows */
@@ -115,8 +128,6 @@ int ts3plugin_init() {
 	comm->setConfigPtr(pConf);
 	comm->setFunctionPtr(&ts3Functions);
 
-	run = std::thread(&Communicator::readThread, comm);
-
 	if(pConf->getConfigOption("greetings").toBool()) comm->sendGreetings();
 
 	upd = new update(pConf);
@@ -128,8 +139,6 @@ int ts3plugin_init() {
 /* Custom code called right before the plugin is unloaded */
 void ts3plugin_shutdown() {
 	if (comm) {
-		comm->running = false;
-		run.join();
 		delete comm;
 	}
 	if (pConf) {
@@ -259,7 +268,23 @@ void ts3plugin_onUpdateChannelEditedEvent(uint64 serverConnectionHandlerID, uint
 void ts3plugin_onUpdateClientEvent(uint64 serverConnectionHandlerID, anyID clientID, anyID invokerID, const char* invokerName, const char* invokerUniqueIdentifier) {
 }
 
-void ts3plugin_onClientMoveEvent(uint64 serverConnectionHandlerID, anyID clientID, uint64 oldChannelID, uint64 newChannelID, int visibility, const char* moveMessage) {
+void ts3plugin_onClientMoveEvent(uint64 serverConnectionHandlerID, anyID clientID, uint64 oldChannelID, uint64 newChannelID, int visibility, const char* moveMessage){
+	std::string s = qPrintable(pConf->getConfigOption("channels2Watch").toString());
+	vector<string> v = split(s, ';');
+
+	for (auto room : v) {
+		ostringstream os;
+		int roomID = stoi(room);
+		if (roomID == newChannelID) {
+			char* name;
+			if (ts3Functions.getClientVariableAsString(serverConnectionHandlerID, clientID, CLIENT_NICKNAME, &name) != ERROR_ok) name = (char*)"unknown";
+			char* channel;
+			if (ts3Functions.getChannelVariableAsString(serverConnectionHandlerID, newChannelID, CHANNEL_NAME, &channel) != ERROR_ok) channel = (char*)"unknown";
+			os << name << " joined one of the channel: " << channel << ".";
+			comm->sendMessage(os.str().c_str());
+			return;
+		}
+	}
 }
 
 void ts3plugin_onClientMoveSubscriptionEvent(uint64 serverConnectionHandlerID, anyID clientID, uint64 oldChannelID, uint64 newChannelID, int visibility) {
@@ -269,6 +294,24 @@ void ts3plugin_onClientMoveTimeoutEvent(uint64 serverConnectionHandlerID, anyID 
 }
 
 void ts3plugin_onClientMoveMovedEvent(uint64 serverConnectionHandlerID, anyID clientID, uint64 oldChannelID, uint64 newChannelID, int visibility, anyID moverID, const char* moverName, const char* moverUniqueIdentifier, const char* moveMessage) {
+	if (pConf->getConfigOption("forced").toBool()) return;
+
+	std::string s = qPrintable(pConf->getConfigOption("channels2Watch").toString());
+	vector<string> v = split(s, ';');
+
+	for (auto room : v) {
+		ostringstream os;
+		int roomID = stoi(room);
+		if (roomID == newChannelID) {
+			char* name;
+			if (ts3Functions.getClientVariableAsString(serverConnectionHandlerID, clientID, CLIENT_NICKNAME, &name) != ERROR_ok) name = (char*)"unknown";
+			char* channel;
+			if (ts3Functions.getChannelVariableAsString(serverConnectionHandlerID, newChannelID, CHANNEL_NAME, &channel) != ERROR_ok) channel = (char*)"unknown";
+			os << name << " joined the channel: " << channel << ".";
+			comm->sendMessage(os.str().c_str());
+			return;
+		}
+	}
 }
 
 void ts3plugin_onClientKickFromChannelEvent(uint64 serverConnectionHandlerID, anyID clientID, uint64 oldChannelID, uint64 newChannelID, int visibility, anyID kickerID, const char* kickerName, const char* kickerUniqueIdentifier, const char* kickMessage) {
@@ -278,13 +321,9 @@ void ts3plugin_onClientKickFromServerEvent(uint64 serverConnectionHandlerID, any
 }
 
 void ts3plugin_onClientIDsEvent(uint64 serverConnectionHandlerID, const char* uniqueClientIdentifier, anyID clientID, const char* clientName) {
-	std::unique_lock<std::mutex> lck(comm->IDlockMutex);
-	comm->setAnyID(clientID);
 }
 
 void ts3plugin_onClientIDsFinishedEvent(uint64 serverConnectionHandlerID) {
-	printf("?\n");
-	comm->IDRequestCV.notify_one();
 }
 
 void ts3plugin_onServerEditedEvent(uint64 serverConnectionHandlerID, anyID editerID, const char* editerName, const char* editerUniqueIdentifier) {
@@ -301,53 +340,6 @@ void ts3plugin_onServerStopEvent(uint64 serverConnectionHandlerID, const char* s
 }
 
 int ts3plugin_onTextMessageEvent(uint64 serverConnectionHandlerID, anyID targetMode, anyID toID, anyID fromID, const char* fromName, const char* fromUniqueIdentifier, const char* message, int ffIgnored) {
-	anyID me;
-	ts3Functions.getClientID(serverConnectionHandlerID, &me);
-	if (me == fromID && pConf->getConfigOption("ignoreSelf").toBool()) return 0;
-	
-	bool send = 0;
-	int muted;
-	int muted2;
-	int sound;
-	int afk;
-	ts3Functions.getClientSelfVariableAsInt(serverConnectionHandlerID, CLIENT_INPUT_MUTED, &muted);
-	ts3Functions.getClientSelfVariableAsInt(serverConnectionHandlerID, CLIENT_INPUT_DEACTIVATED, &muted2);
-	ts3Functions.getClientSelfVariableAsInt(serverConnectionHandlerID, CLIENT_OUTPUT_MUTED, &sound);
-	ts3Functions.getClientSelfVariableAsInt(serverConnectionHandlerID, CLIENT_AWAY, &afk);
-
-	if ((targetMode == TextMessageTarget_CLIENT &&
-		(pConf->getConfigOption("privateMute").toBool() && (muted || muted2) ||
-		pConf->getConfigOption("privateSound").toBool() && sound ||
-		pConf->getConfigOption("privateAFK").toBool() && afk ||
-		pConf->getConfigOption("privateAlways").toBool()) &&
-		pConf->getConfigOption("privateEnabled").toBool()) ||
-		(targetMode == TextMessageTarget_CHANNEL &&
-		(pConf->getConfigOption("channelMute").toBool() && (muted || muted2) ||
-		pConf->getConfigOption("channelSound").toBool() && sound ||
-		pConf->getConfigOption("channelAFK").toBool() && afk ||
-		pConf->getConfigOption("channelAlways").toBool()) &&
-		pConf->getConfigOption("channelEnabled").toBool()) ||
-		(targetMode == TextMessageTarget_SERVER &&
-		(pConf->getConfigOption("serverMute").toBool() && (muted || muted2) ||
-		pConf->getConfigOption("serverSound").toBool() && sound ||
-		pConf->getConfigOption("serverAFK").toBool() && afk ||
-		pConf->getConfigOption("serverAlways").toBool()) &&
-		pConf->getConfigOption("serverEnabled").toBool())) {
-
-		std::ostringstream str;
-		str << "<i>" << fromName << "</i> send a message to";
-		if (targetMode == TextMessageTarget_CLIENT)
-			str << " you: <pre>";
-		else if(targetMode == TextMessageTarget_CHANNEL)
-			str << " your channel: <pre>";
-		else
-			str << " the server: <pre>";
-			
-		str << qPrintable(QString(message).replace("&", "&amp;").replace("<", "&lt;").replace(">", "&gt;")) << "</pre>";
-
-		comm->sendMessage(str.str().c_str(), fromUniqueIdentifier, serverConnectionHandlerID, true);
-	}
-
 	return 0;
 }
 
@@ -411,37 +403,7 @@ void ts3plugin_onClientBanFromServerEvent(uint64 serverConnectionHandlerID, anyI
 }
 
 int ts3plugin_onClientPokeEvent(uint64 serverConnectionHandlerID, anyID fromClientID, const char* pokerName, const char* pokerUniqueIdentity, const char* message, int ffIgnored) {
-	anyID me;
-	ts3Functions.getClientID(serverConnectionHandlerID, &me);
-	if (me == fromClientID && pConf->getConfigOption("ignoreSelf").toBool()) return 0;
-	if (!pConf->getConfigOption("pokeEnabled").toBool()) return 0;
-
-	bool send = 0;
-	int muted;
-	int muted2;
-	int sound;
-	int afk;
-	ts3Functions.getClientSelfVariableAsInt(serverConnectionHandlerID, CLIENT_INPUT_MUTED, &muted);
-	ts3Functions.getClientSelfVariableAsInt(serverConnectionHandlerID, CLIENT_INPUT_DEACTIVATED, &muted2);
-	ts3Functions.getClientSelfVariableAsInt(serverConnectionHandlerID, CLIENT_OUTPUT_MUTED, &sound);
-	ts3Functions.getClientSelfVariableAsInt(serverConnectionHandlerID, CLIENT_AWAY, &afk);
-
-	if (pConf->getConfigOption("pokeMute").toBool() && (muted || muted2) ||
-		pConf->getConfigOption("pokeSound").toBool() && sound ||
-		pConf->getConfigOption("pokeAFK").toBool() && afk ||
-		pConf->getConfigOption("pokeAlways").toBool()) {
-
-		std::ostringstream str;
-		str << "<i>" << pokerName << "</i> poked you";
-		if (!strcmp(message, "") == 0) {
-			str << " with the message: <pre>" << QString(message).replace("&", "&amp;").replace("<", "&lt;").replace(">", "&gt;").toStdString().c_str() << "</pre>";
-		}
-		else str << "!";
-
-		comm->sendMessage(str.str().c_str(), pokerUniqueIdentity, serverConnectionHandlerID, true);
-	}
-	
-	return 0;  /* 0 = handle normally, 1 = client will ignore the poke */
+	return 0;
 }
 
 void ts3plugin_onClientSelfVariableUpdateEvent(uint64 serverConnectionHandlerID, int flag, const char* oldValue, const char* newValue) {

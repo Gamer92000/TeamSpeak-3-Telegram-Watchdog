@@ -27,11 +27,8 @@ public:
 	void setConfigPtr(config* conf);
 	void setFunctionPtr(TS3Functions* functions);
 	void sendGreetings();
-	void sendMessage(const char* message, const char* uuid, uint64 serverConnectionHandlerID, bool save);
-	void readThread();
-	void setAnyID(anyID id);
+	void sendMessage(const char* message);
 	void checkForUpdate(update*);
-	bool running;
 	std::mutex IDlockMutex;
 	std::condition_variable IDRequestCV;
 
@@ -43,5 +40,5 @@ private:
 	TS3Functions* ts3Functions = NULL;
 	QNetworkAccessManager* manager;
 	anyID ID;
-	void startRequest(const char* requestedUrl, std::string uuid, uint64 serverConnectionHandlerID, bool save);
+	void startRequest(const char* requestedUrl);
 };
