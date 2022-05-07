@@ -46,7 +46,7 @@ jobs:
           dir: '${{ github.workspace }}'
           install-deps: 'true'
           cached: ${{ steps.cache-qt.outputs.cache-hit }}
-          setup-python: 'true'
+          setup-python: 'false'
           tools: 'tools_ifw tools_qtcreator,qt.tools.qtcreator'
           aqtversion: '==2.0.0'
       - name: Setup cmake
