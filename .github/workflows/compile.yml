@@ -14,6 +14,7 @@ jobs:
       - uses: ilammy/msvc-dev-cmd@v1
         with:
           arch: amd64
+          toolset: v140
       - name: Cache Qt
         id: cache-qt
         uses: actions/cache@v1  # not v2!
@@ -26,7 +27,7 @@ jobs:
           version: '5.12.3'
           host: 'windows'
           target: 'desktop'
-          arch: 'win64_msvc2019_64'
+          arch: 'win64_msvc2017_64'
           dir: '${{ github.workspace }}/example/'
           install-deps: 'true'
           cached: ${{ steps.cache-qt.outputs.cache-hit }}
