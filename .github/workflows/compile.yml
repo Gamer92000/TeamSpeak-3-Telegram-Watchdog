@@ -38,6 +38,11 @@ jobs:
           aqtversion: '==2.0.0'
       - name: Setup cmake
         uses: jwlawson/actions-setup-cmake@v1.12
+      - name: Build
+        run: |
+          cd example
+          cmake -G "Visual Studio 14 2015 Win64" .
+          cmake --build . --config Release
 
   # release:
   #   needs: build
