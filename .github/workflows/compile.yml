@@ -11,10 +11,12 @@ jobs:
     runs-on: windows-latest
     steps:
       - uses: actions/checkout@v2
+        with:
+          submodules: true
       - uses: ilammy/msvc-dev-cmd@v1
         with:
           arch: amd64
-          toolset: v140
+          toolset: 14.0
       - name: Cache Qt
         id: cache-qt
         uses: actions/cache@v1  # not v2!
