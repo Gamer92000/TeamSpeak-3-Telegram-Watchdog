@@ -17,7 +17,6 @@
 #include <string>
 #include <condition_variable>
 #include "config.h"
-#include "update.h"
 #include "ts3_functions.h"
 
 class Communicator : public QObject {
@@ -29,7 +28,6 @@ public:
 	void setFunctionPtr(TS3Functions* functions);
 	void sendGreetings();
 	void sendMessage(const std::string message);
-	void checkForUpdate(update*);
 	std::mutex IDlockMutex;
 	std::condition_variable IDRequestCV;
 

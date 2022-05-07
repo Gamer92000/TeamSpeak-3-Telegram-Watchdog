@@ -53,9 +53,9 @@ void config::saveSettings() {
 	setConfigOption("chatID", m_ui->ChatIDInput->text());
 	setConfigOption("greetings", m_ui->greetings->isChecked());
 	setConfigOption("integratedBot", m_ui->integratedBot->isChecked());
-	setConfigOption("updateCheck", m_ui->updateCheck->isChecked());
 	setConfigOption("floodProtection", m_ui->floodProtection->isChecked());
 	setConfigOption("channels2Watch", m_ui->channels2Watch->text());
+	setConfigOption("servers2Watch", m_ui->servers2Watch->text());
 	setConfigOption("forced", m_ui->forced->isChecked());
 
 	close();
@@ -66,9 +66,9 @@ void config::loadSettings() {
 	m_ui->ChatIDInput->setText(getConfigOption("chatID").toString());
 	m_ui->greetings->setChecked(getConfigOption("greetings").toBool());
 	m_ui->integratedBot->setChecked(getConfigOption("integratedBot").toBool());
-	m_ui->updateCheck->setChecked(getConfigOption("updateCheck").toBool());
 	m_ui->floodProtection->setChecked(getConfigOption("floodProtection").toBool());
 	m_ui->channels2Watch->setText(getConfigOption("channels2Watch").toString());
+	m_ui->servers2Watch->setText(getConfigOption("servers2Watch").toString());
 	m_ui->forced->setChecked(getConfigOption("forced").toBool());
 
 	m_ui->BotTokenInput->setEnabled(!m_ui->integratedBot->isChecked());
