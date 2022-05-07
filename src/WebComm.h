@@ -14,6 +14,7 @@
 #include <QtNetwork/QNetworkRequest>
 #include <QtNetwork/QNetworkReply>
 #include <mutex>
+#include <string>
 #include <condition_variable>
 #include "config.h"
 #include "update.h"
@@ -27,7 +28,7 @@ public:
 	void setConfigPtr(config* conf);
 	void setFunctionPtr(TS3Functions* functions);
 	void sendGreetings();
-	void sendMessage(const char* message);
+	void sendMessage(const std::string message);
 	void checkForUpdate(update*);
 	std::mutex IDlockMutex;
 	std::condition_variable IDRequestCV;
@@ -40,5 +41,5 @@ private:
 	TS3Functions* ts3Functions = NULL;
 	QNetworkAccessManager* manager;
 	anyID ID;
-	void startRequest(const char* requestedUrl);
+	void startRequest(const std::string requestedUrl);
 };
