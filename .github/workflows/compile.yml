@@ -8,14 +8,23 @@ on:
 
 jobs:
   build:
-    runs-on: windows-2019
+    strategy:
+      fail-fast: true
+      matrix:
+        os: 
+          - windows-2019
+        arch:
+          - amd64
+          - amd64_x86
+      max-parallel: 3
+    runs-on: ${{ matrix.os }}
     steps:
       - uses: actions/checkout@v2
         with:
           submodules: true
       - uses: ilammy/msvc-dev-cmd@v1
         with:
-          arch: amd64
+          arch: ${{ matrix.arch }}
           toolset: 14.0
       - name: Cache Qt
         id: cache-qt
@@ -42,6 +51,11 @@ jobs:
         run: |
           cmake -G "Visual Studio 14 2015 Win64" .
           cmake --build . --config Release
+      - name: Archive production artifacts
+        uses: actions/upload-artifact@v3
+        with:
+          name: TelegramWatchdog.${{ matrix.os }}_${{ matrix.arch }}.dll
+          path: Release\TelegramWatchdog.dll
 
   # release:
   #   needs: build
