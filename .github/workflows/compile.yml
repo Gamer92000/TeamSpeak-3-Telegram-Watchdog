@@ -38,7 +38,7 @@ jobs:
           version: '5.12.3'
           host: 'windows'
           target: 'desktop'
-          arch: ${{ matrix.arch == "amd64" && "win64_msvc2017_64" || "win32_msvc2017" }}
+          arch: ${{ matrix.arch == 'amd64' && 'win64_msvc2017_64' || 'win32_msvc2017' }}
           dir: '${{ github.workspace }}'
           install-deps: 'true'
           cached: ${{ steps.cache-qt.outputs.cache-hit }}
