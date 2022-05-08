@@ -89,10 +89,11 @@ jobs:
       - name: Move artifacts to release
         run: |
           mv tmp/**/* deploy/plugins/
-      - name: Compile artifacts
+      - name: Install zip
         uses: montudor/action-zip@v1
-        with:
-          args: cd deploy && zip -qq -r ../TelegramWatchdog.zip .
+      - name: Zip output
+        run: zip -qq -r ../TelegramWatchdog.zip .
+        working-directory: deploy
       - name: Upload artifacts
         uses: actions/upload-release-asset@v1
         env:
