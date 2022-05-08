@@ -55,54 +55,43 @@ jobs:
         run: |
           cmake -A ${{ matrix.arch == 'x64' && 'x64' || 'Win32' }} .
           cmake --build . --config Release
+      - name: Rename release
+        run: |
+          mv release/TelegramWatchdog.dll TelegramWatchdog.${{ matrix.os }}_${{ matrix.arch }}.dll
       - name: Archive production artifacts
         uses: actions/upload-artifact@v3
         with:
-          name: TelegramWatchdog.${{ matrix.os }}_${{ matrix.arch }}.dll
-          path: Release\TelegramWatchdog.dll
+          name: ${{ matrix.os }}${{ matrix.arch }}
+          path: TelegramWatchdog.${{ matrix.os }}_${{ matrix.arch }}.dll
 
-  # release:
-  #   needs: build
-  #   runs-on: ubuntu-latest
-  #   steps:
-  #     - name: Create Release
-  #       id: create_release
-  #       uses: actions/create-release@v1
-  #       env:
-  #         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }} # This token is provided by Actions, you do not need to create your own token
-  #       with:
-  #         tag_name: ${{ github.ref }}
-  #         release_name: Release ${{ github.ref }}
-  #         draft: false
-  #         prerelease: false
-
-  #   outputs:
-  #     upload_url: ${{ steps.create_release.outputs.upload_url }}
-
-  # upload:
-  #   needs: release
-  #   runs-on: ubuntu-latest
-  #   strategy:
-  #     fail-fast: true
-  #     matrix:
-  #       os: [ubuntu-latest, macos-latest, windows-latest]
-  #     max-parallel: 3
-  #   steps:
-  #     - uses: actions/download-artifact@v2
-  #       with:
-  #         name: ${{ matrix.os }}
-
-  #     - name: chmod
-  #       if: startsWith(matrix.os, 'ubuntu')
-  #       run: chmod +x TS5AddonInstaller_Linux
-
-  #     - name: Upload Windows Asset
-  #       if: startsWith(matrix.os, 'windows')
-  #       uses: actions/upload-release-asset@v1
-  #       env:
-  #         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-  #       with:
-  #         upload_url: ${{ needs.release.outputs.upload_url }}
-  #         asset_path: TS5AddonInstaller_Win.exe
-  #         asset_name: TS5AddonInstaller_Win.exe
-  #         asset_content_type: application/x-executable
+  release:
+    needs: build
+    runs-on: ubuntu-latest
+    steps:
+      - name: Create Release
+        id: create_release
+        uses: actions/create-release@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }} # This token is provided by Actions, you do not need to create your own token
+        with:
+          tag_name: ${{ github.ref }}
+          release_name: Release ${{ github.ref }}
+          draft: true
+          prerelease: false
+      - name: Collect artifacts
+        working-directory: ./deploy/plugins
+        uses: actions/download-artifact@v3
+      - name: Compile artifacts
+        uses: montudor/action-zip@v1
+        with:
+          args: zip -qq -r TelegramWatchdog.zip ./deploy
+      - name: Upload artifacts
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ create_release.upload_url }}
+          name: TelegramWatchdog.ts3_plugin
+          asset_path: TelegramWatchdog.zip
+          asset_name: TelegramWatchdog.ts3_plugin
+          asset_content_type: application/zip
