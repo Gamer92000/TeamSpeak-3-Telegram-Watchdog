@@ -79,9 +79,8 @@ jobs:
           draft: true
           prerelease: false
       - name: Create Tmp Folder
-        uses: actions/create-folder@v1
-        with:
-          path: tmp
+        run: |
+          mkdir -p tmp
       - name: Collect artifacts
         uses: actions/download-artifact@v3
         with:
