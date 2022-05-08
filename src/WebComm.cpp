@@ -72,20 +72,6 @@ void Communicator::sendMessage(const std::string message)
     last = std::time(nullptr);
 }
 
-void Communicator::checkForUpdate(update* upd) {
-    manager = new QNetworkAccessManager();
-    QNetworkReply* reply = manager->get(QNetworkRequest(QUrl(UPDATE_URL)));
-    connect(reply, &QNetworkReply::finished, [=]() {
-        if (reply->error() != QNetworkReply::NoError) { ts3Functions->logMessage("TWatchdog: Unable to pull version information.", LogLevel_WARNING, "PLUGIN", NULL); return; }
-        std::ostringstream response;
-        response << reply->readAll().constData();
-        if (!QString::compare(QString(response.str().c_str()).trimmed(), PLUGIN_VERSION)) { ts3Functions->logMessage("TWatchdog: No Update found!", LogLevel_INFO, "PLUGIN", NULL); return; }
-        ts3Functions->logMessage("TWatchdog: New version found! Download at https://julianimhof.de/files/_TelegramWatchdog.ts3plugin", LogLevel_INFO, "PLUGIN", NULL);
-        upd->setText(PLUGIN_VERSION, response.str().c_str());
-        upd->show();
-    });
-}
-
 void Communicator::startRequest(const std::string requestedUrl)
 {
     manager = new QNetworkAccessManager();

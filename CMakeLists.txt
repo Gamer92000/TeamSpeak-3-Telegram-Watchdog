@@ -2,7 +2,7 @@ cmake_minimum_required(VERSION 3.10)
 
 set(CMAKE_GENERATOR_TOOLSET "v140")
 set(CMAKE_VS_PLATFORM_TOOLSET "v140")
-set(CMAKE_PREFIX_PATH "H:\\Qt\\5.12.3\\msvc2017")
+# set(CMAKE_PREFIX_PATH "$Qt5_DIR")
 set(CMAKE_INCLUDE_CURRENT_DIR ON)
 set(CMAKE_AUTOMOC ON)
 set(CMAKE_AUTOUIC ON)
@@ -25,8 +25,6 @@ set(sources
     src/configui.ui
     src/definitions.h
     src/plugin.cpp
-    src/update.cpp
-    src/updateui.ui
     src/WebComm.cpp
 )
 

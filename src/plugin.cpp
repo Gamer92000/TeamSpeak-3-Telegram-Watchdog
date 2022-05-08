@@ -27,7 +27,6 @@
 #include "WebComm.h"
 #include "definitions.h"
 #include "config.h"
-#include "update.h"
 
 static struct TS3Functions ts3Functions;
 
@@ -49,7 +48,6 @@ static struct TS3Functions ts3Functions;
 
 static char* pluginID = NULL;
 config* pConf;
-update* upd;
 Communicator* comm;
 std::future<void> a3;
 
@@ -130,9 +128,6 @@ int ts3plugin_init() {
 
 	if(pConf->getConfigOption("greetings").toBool()) comm->sendGreetings();
 
-	upd = new update(pConf);
-	if (pConf->getConfigOption("updateCheck").toBool()) comm->checkForUpdate(upd);
-
 	return 0;
 }
 
@@ -149,11 +144,6 @@ void ts3plugin_shutdown() {
 	if(pluginID) {
 		free(pluginID);
 		pluginID = NULL;
-	}
-	if (upd) {
-		upd->close();
-		delete upd;
-		upd = NULL;
 	}
 }
 
@@ -199,8 +189,7 @@ void ts3plugin_freeMemory(void* data) {
  * These IDs are freely choosable by the plugin author. It's not really needed to use an enum, it just looks prettier.
  */
 enum {
-	MENU_ID_GLOBAL_SETTINGS = 1,
-	MENU_ID_GLOBAL_UPDATE
+	MENU_ID_GLOBAL_SETTINGS = 1
 };
 
 /* Helper function to create a menu item */
@@ -228,7 +217,6 @@ void ts3plugin_initMenus(struct PluginMenuItem*** menuItems, char** menuIcon) {
 
 	BEGIN_CREATE_MENUS(2);  /* IMPORTANT: Number of menu items must be correct! */
 	CREATE_MENU_ITEM(PLUGIN_MENU_TYPE_GLOBAL, MENU_ID_GLOBAL_SETTINGS, "Settings", "Settings.svg");
-	CREATE_MENU_ITEM(PLUGIN_MENU_TYPE_GLOBAL, MENU_ID_GLOBAL_UPDATE, "Check for Updates", "Update.svg");
 	END_CREATE_MENUS;  /* Includes an assert checking if the number of menu items matched */
 
 	*menuIcon = (char*)malloc(PLUGIN_MENU_BUFSZ * sizeof(char));
@@ -577,9 +565,6 @@ void ts3plugin_onMenuItemEvent(uint64 serverConnectionHandlerID, enum PluginMenu
 				pConf->activateWindow();
 			}
 			else pConf->show();
-			break;
-		case MENU_ID_GLOBAL_UPDATE:
-			comm->checkForUpdate(upd);
 			break;
 		}
 		break;
