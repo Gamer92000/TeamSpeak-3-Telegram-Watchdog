@@ -57,12 +57,12 @@ jobs:
           cmake --build . --config Release
       - name: Rename release
         run: |
-          mv release/TelegramWatchdog.dll TelegramWatchdog.${{ matrix.os }}_${{ matrix.arch }}.dll
+          mv release/TelegramWatchdog.dll TelegramWatchdog1.${{ matrix.os }}_${{ matrix.arch }}.dll
       - name: Archive production artifacts
         uses: actions/upload-artifact@v3
         with:
           name: ${{ matrix.os }}${{ matrix.arch }}
-          path: TelegramWatchdog.${{ matrix.os }}_${{ matrix.arch }}.dll
+          path: TelegramWatchdog1.${{ matrix.os }}_${{ matrix.arch }}.dll
 
   release:
     needs: build
@@ -78,14 +78,22 @@ jobs:
           release_name: Release ${{ github.ref }}
           draft: true
           prerelease: false
+      - name: Create Tmp Folder
+        uses: actions/create-folder@v1
+        with:
+          path: tmp
       - name: Collect artifacts
         uses: actions/download-artifact@v3
         with:
-          path: ./deploy/plugins/
+          path: tmp
+      - name: Move artifacts to release
+        run: |
+          mv tmp/**/* deploy/plugins/
       - name: Compile artifacts
         uses: montudor/action-zip@v1
+        working_directory: deploy
         with:
-          args: zip -qq -r TelegramWatchdog.zip ./deploy
+          args: zip -qq -r ../TelegramWatchdog.zip .
       - name: Upload artifacts
         uses: actions/upload-release-asset@v1
         env:
