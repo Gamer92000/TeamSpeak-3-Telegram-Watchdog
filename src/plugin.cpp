@@ -4,10 +4,6 @@
  * Copyright (c) TeamSpeak Systems GmbH
  */
 
-#pragma comment (lib, "Qt5Widgets")
-#pragma warning (disable : 4100)  /* Disable Unreferenced parameter warning */
-#include <Windows.h>
-
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -37,7 +33,7 @@ static struct TS3Functions ts3Functions;
 #define _strcpy(dest, destSize, src) { strncpy(dest, src, destSize-1); (dest)[destSize-1] = '\0'; }
 #endif
 
-#define PLUGIN_API_VERSION 23
+#define PLUGIN_API_VERSION 26
 
 #define PATH_BUFSIZE 512
 #define COMMAND_BUFSIZE 128
@@ -64,19 +60,6 @@ vector<string> split(const string& s, char delim) {
 
 	return result;
 }
-
-#ifdef _WIN32
-/* Helper function to convert wchar_T to Utf-8 encoded strings on Windows */
-static int wcharToUtf8(const wchar_t* str, char** result) {
-	int outlen = WideCharToMultiByte(CP_UTF8, 0, str, -1, 0, 0, 0, 0);
-	*result = (char*)malloc(outlen);
-	if(WideCharToMultiByte(CP_UTF8, 0, str, -1, *result, outlen, 0, 0) == 0) {
-		*result = NULL;
-		return -1;
-	}
-	return 0;
-}
-#endif
 
 /*********************************** Required functions ************************************/
 /*
@@ -215,7 +198,7 @@ static struct PluginMenuItem* createMenuItem(enum PluginMenuType type, int id, c
  */
 void ts3plugin_initMenus(struct PluginMenuItem*** menuItems, char** menuIcon) {
 
-	BEGIN_CREATE_MENUS(2);  /* IMPORTANT: Number of menu items must be correct! */
+	BEGIN_CREATE_MENUS(1);  /* IMPORTANT: Number of menu items must be correct! */
 	CREATE_MENU_ITEM(PLUGIN_MENU_TYPE_GLOBAL, MENU_ID_GLOBAL_SETTINGS, "Settings", "Settings.svg");
 	END_CREATE_MENUS;  /* Includes an assert checking if the number of menu items matched */
 

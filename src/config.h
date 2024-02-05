@@ -1,7 +1,5 @@
 ﻿#pragma once
 #include <QtWidgets/QDialog>
-#pragma comment (lib, "Qt5Widgets")
-#pragma comment (lib, "Qt5Core")
 #include <QtCore/QSettings>
 #include <memory>
 

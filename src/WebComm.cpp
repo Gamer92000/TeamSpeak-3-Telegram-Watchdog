@@ -1,5 +1,3 @@
-#pragma comment (lib, "Qt5Core")
-
 #include "WebComm.h"
 #include <iostream>
 #include <QtCore/QJsonDocument>
@@ -13,7 +11,9 @@
 #include <thread>
 #include <sstream>
 #include <string>
+#ifdef _WIN32
 #include <Windows.h>
+#endif
 
 Communicator::Communicator(QObject* parent) :
     QObject(parent)
@@ -38,6 +38,8 @@ void Communicator::setFunctionPtr(TS3Functions* functions)
 void Communicator::sendGreetings() {
     std::ostringstream greetings;
     greetings << "Telegram Watchdog\nwas succesfully initiated!";
+    
+    #ifdef _WIN32
     TCHAR infoBuf[100];
     DWORD bufCharCount = 100;
     if (GetComputerName(infoBuf, &bufCharCount)) {
@@ -46,6 +48,8 @@ void Communicator::sendGreetings() {
         wcstombs_s(&nNumCharConverted, (char*) szString, 100, (wchar_t*) infoBuf, 100);
         greetings << "\n   Host System: " << szString;
     }
+    #endif
+    
     sendMessage(greetings.str().c_str());
 }
 
