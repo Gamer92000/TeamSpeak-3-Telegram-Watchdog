@@ -47,15 +47,13 @@ config* pConf;
 Communicator* comm;
 std::future<void> a3;
 
-using namespace std;
-
-vector<string> split(const string& s, char delim) {
-	vector<string> result;
-	stringstream ss(s);
-	string item;
+static std::vector<uint64> split(const std::string& s, char delim) {
+	std::vector<uint64> result;
+	std::stringstream ss(s);
+	std::string item;
 
 	while (getline(ss, item, delim)) {
-		result.push_back(item);
+		result.push_back(stoi(item));
 	}
 
 	return result;
@@ -239,23 +237,33 @@ void ts3plugin_onUpdateChannelEditedEvent(uint64 serverConnectionHandlerID, uint
 void ts3plugin_onUpdateClientEvent(uint64 serverConnectionHandlerID, anyID clientID, anyID invokerID, const char* invokerName, const char* invokerUniqueIdentifier) {
 }
 
-void ts3plugin_onClientMoveEvent(uint64 serverConnectionHandlerID, anyID clientID, uint64 oldChannelID, uint64 newChannelID, int visibility, const char* moveMessage){
-	std::string s = qPrintable(pConf->getConfigOption("channels2Watch").toString());
-	vector<string> v = split(s, ';');
+void ts3plugin_onClientMoveEvent(uint64 serverConnectionHandlerID, anyID clientID, uint64 oldChannelID, uint64 newChannelID, int visibility, const char* moveMessage) {
+	std::string s = pConf->getConfigOption("channels2Watch").toString().toStdString();
+	bool careForLeave = pConf->getConfigOption("leave").toBool();
+	std::vector<uint64> v = split(s, ';');
 
-	for (auto room : v) {
-		ostringstream os;
-		int roomID = stoi(room);
-		if (roomID == newChannelID) {
-			char* name;
-			if (ts3Functions.getClientVariableAsString(serverConnectionHandlerID, clientID, CLIENT_NICKNAME, &name) != ERROR_ok) name = (char*)"unknown";
-			char* channel;
-			if (ts3Functions.getChannelVariableAsString(serverConnectionHandlerID, newChannelID, CHANNEL_NAME, &channel) != ERROR_ok) channel = (char*)"unknown";
-			os << name << " joined one of the channel: " << channel << ".";
-			comm->sendMessage(os.str().c_str());
-			return;
-		}
-	}
+	bool joinOfInterest = std::find(v.begin(), v.end(), newChannelID) != std::end(v);
+	bool leaveOfInterest = careForLeave && std::find(v.begin(), v.end(), oldChannelID) != std::end(v);
+
+	if (!joinOfInterest && !leaveOfInterest) return;
+	
+	char* name;
+	if (ts3Functions.getClientVariableAsString(serverConnectionHandlerID, clientID, CLIENT_NICKNAME, &name) != ERROR_ok) name = (char*)"unknown";
+	char* fromChannel;
+	if (ts3Functions.getChannelVariableAsString(serverConnectionHandlerID, oldChannelID, CHANNEL_NAME, &fromChannel) != ERROR_ok) fromChannel = (char*)"unknown";
+	char* toChannel;
+	if (ts3Functions.getChannelVariableAsString(serverConnectionHandlerID, newChannelID, CHANNEL_NAME, &toChannel) != ERROR_ok) toChannel = (char*)"unknown";
+
+	std::ostringstream os;
+
+	if (joinOfInterest && leaveOfInterest)
+		os << name << " went from " << fromChannel << " to " << toChannel << ".";
+	else if (joinOfInterest)
+		os << name << " joined " << toChannel << ".";
+	else
+		os << name << " left " << fromChannel << ".";
+
+	comm->sendMessage(os.str().c_str());
 }
 
 void ts3plugin_onClientMoveSubscriptionEvent(uint64 serverConnectionHandlerID, anyID clientID, uint64 oldChannelID, uint64 newChannelID, int visibility) {
@@ -268,21 +276,31 @@ void ts3plugin_onClientMoveMovedEvent(uint64 serverConnectionHandlerID, anyID cl
 	if (pConf->getConfigOption("forced").toBool()) return;
 
 	std::string s = qPrintable(pConf->getConfigOption("channels2Watch").toString());
-	vector<string> v = split(s, ';');
+	bool careForLeave = pConf->getConfigOption("leave").toBool();
+	std::vector<uint64> v = split(s, ';');
 
-	for (auto room : v) {
-		ostringstream os;
-		int roomID = stoi(room);
-		if (roomID == newChannelID) {
-			char* name;
-			if (ts3Functions.getClientVariableAsString(serverConnectionHandlerID, clientID, CLIENT_NICKNAME, &name) != ERROR_ok) name = (char*)"unknown";
-			char* channel;
-			if (ts3Functions.getChannelVariableAsString(serverConnectionHandlerID, newChannelID, CHANNEL_NAME, &channel) != ERROR_ok) channel = (char*)"unknown";
-			os << name << " joined the channel: " << channel << ".";
-			comm->sendMessage(os.str().c_str());
-			return;
-		}
-	}
+	bool joinOfInterest = std::find(v.begin(), v.end(), newChannelID) != std::end(v);
+	bool leaveOfInterest = careForLeave && std::find(v.begin(), v.end(), oldChannelID) != std::end(v);
+
+	if (!joinOfInterest && !leaveOfInterest) return;
+
+	char* name;
+	if (ts3Functions.getClientVariableAsString(serverConnectionHandlerID, clientID, CLIENT_NICKNAME, &name) != ERROR_ok) name = (char*)"unknown";
+	char* fromChannel;
+	if (ts3Functions.getChannelVariableAsString(serverConnectionHandlerID, oldChannelID, CHANNEL_NAME, &fromChannel) != ERROR_ok) fromChannel = (char*)"unknown";
+	char* toChannel;
+	if (ts3Functions.getChannelVariableAsString(serverConnectionHandlerID, newChannelID, CHANNEL_NAME, &toChannel) != ERROR_ok) toChannel = (char*)"unknown";
+
+	std::ostringstream os;
+
+	if (joinOfInterest && leaveOfInterest)
+		os << name << " went from " << fromChannel << " to " << toChannel << ".";
+	else if (joinOfInterest)
+		os << name << " joined " << toChannel << ".";
+	else
+		os << name << " left " << fromChannel << ".";
+
+	comm->sendMessage(os.str().c_str());
 }
 
 void ts3plugin_onClientKickFromChannelEvent(uint64 serverConnectionHandlerID, anyID clientID, uint64 oldChannelID, uint64 newChannelID, int visibility, anyID kickerID, const char* kickerName, const char* kickerUniqueIdentifier, const char* kickMessage) {

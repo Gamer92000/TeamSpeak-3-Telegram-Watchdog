@@ -19,7 +19,6 @@ config::config(const QString& configLocation, QWidget* parent /* = nullptr */) :
 		m_ui->floodProtection->setEnabled(!checked);
 		});
 	adjustSize();
-	setWindowFlags(Qt::Dialog | Qt::MSWindowsFixedSizeDialogHint);
 	setWindowFlags(windowFlags() & ~Qt::WindowContextHelpButtonHint);
 }
 
@@ -43,7 +42,6 @@ void config::showEvent(QShowEvent* /* e */) {
 
 void config::changeEvent(QEvent* e) {
 	if (e->type() == QEvent::StyleChange && isVisible()) {
-		m_ui->verticalLayoutWidget_2->adjustSize();
 		adjustSize();
 	}
 }
@@ -55,8 +53,8 @@ void config::saveSettings() {
 	setConfigOption("integratedBot", m_ui->integratedBot->isChecked());
 	setConfigOption("floodProtection", m_ui->floodProtection->isChecked());
 	setConfigOption("channels2Watch", m_ui->channels2Watch->text());
-	setConfigOption("servers2Watch", m_ui->servers2Watch->text());
 	setConfigOption("forced", m_ui->forced->isChecked());
+	setConfigOption("leave", m_ui->leave->isChecked());
 
 	close();
 }
@@ -68,8 +66,8 @@ void config::loadSettings() {
 	m_ui->integratedBot->setChecked(getConfigOption("integratedBot").toBool());
 	m_ui->floodProtection->setChecked(getConfigOption("floodProtection").toBool());
 	m_ui->channels2Watch->setText(getConfigOption("channels2Watch").toString());
-	m_ui->servers2Watch->setText(getConfigOption("servers2Watch").toString());
 	m_ui->forced->setChecked(getConfigOption("forced").toBool());
+	m_ui->leave->setChecked(getConfigOption("leave").toBool());
 
 	m_ui->BotTokenInput->setEnabled(!m_ui->integratedBot->isChecked());
 	m_ui->floodProtection->setEnabled(!m_ui->integratedBot->isChecked());
