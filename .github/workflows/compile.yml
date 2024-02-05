@@ -5,84 +5,85 @@ on:
     tags:
       - 'v*' # Push events to matching v*, i.e. v1.0, v20.15.10
 
+env:
+  PLUGIN_NAME: TelegramBridge
+
 jobs:
   build:
     strategy:
-      fail-fast: true
+      fail-fast: false
       matrix:
         os: 
           - windows-2019
         arch:
           - x64
           - x86
-      max-parallel: 3
     runs-on: ${{ matrix.os }}
     steps:
-      - uses: actions/checkout@v2
+      - name: Checkout
+        uses: actions/checkout@v4
         with:
           submodules: true
-      - uses: ilammy/msvc-dev-cmd@v1
+      - name: Setup MSVC (Windows only)
+        uses: ilammy/msvc-dev-cmd@v1
+        if: matrix.os == 'windows-2019'
         with:
           arch: ${{ matrix.arch }}
           toolset: 14.0
-      - uses: actions/setup-python@v3
-        with:
-          python-version: '3.10'
-          architecture: ${{ matrix.arch }}
-      - name: Cache Qt
-        id: cache-qt
-        uses: actions/cache@v1
-        with:
-          path: ../Qt
-          key: ${{ runner.os }}-QtCache
       - name: Install Qt
-        uses: jurplel/install-qt-action@v2
+        uses: jurplel/install-qt-action@v3
         with:
-          version: '5.12.3'
-          host: 'windows'
+          version: '5.15.2'
           target: 'desktop'
-          arch: ${{ matrix.arch == 'x64' && 'win64_msvc2017_64' || 'win32_msvc2017' }}
+          arch: ${{ matrix.os == 'windows-2019' && (matrix.arch == 'x64' && 'win64_msvc2019_64' || 'win32_msvc2019' ) || (matrix.os == 'ubuntu-latest' && 'gcc_64' || 'clang_64') }}
           dir: '${{ github.workspace }}'
-          install-deps: 'true'
-          cached: ${{ steps.cache-qt.outputs.cache-hit }}
-          setup-python: 'false'
-          tools: 'tools_ifw tools_qtcreator,qt.tools.qtcreator'
-          aqtversion: '==2.0.0'
+          cache: true
+          cache-key-prefix: ${{ runner.os }}-${{ matrix.arch }}-Qt
       - name: Setup cmake
-        uses: jwlawson/actions-setup-cmake@v1.12
+        uses: jwlawson/actions-setup-cmake@v1.14
       - name: Build
         run: |
-          cmake -A ${{ matrix.arch == 'x64' && 'x64' || 'Win32' }} .
+          cmake ${{matrix.os == 'windows-2019' && '-A' || ''}} ${{matrix.os == 'windows-2019' && (matrix.arch == 'x64' && 'x64' || 'Win32') || '' }} .
           cmake --build . --config Release
-      - name: Rename release
+      - name: Rename release (Windows)
+        if: matrix.os == 'windows-2019'
         run: |
-          mv release/TelegramWatchdog.dll TelegramWatchdog1.${{ matrix.os }}_${{ matrix.arch }}.dll
+          mv Release/${{ env.PLUGIN_NAME }}.dll ${{ env.PLUGIN_NAME }}_win${{ matrix.arch == 'x64' && '64' || '32' }}.dll
+      - name: Rename release (Linux)
+        if: matrix.os == 'ubuntu-latest'
+        run: |
+          mv lib${{ env.PLUGIN_NAME }}.so ${{ env.PLUGIN_NAME }}_linux_amd64.so
+      - name: Rename release (MacOS)
+        if: matrix.os == 'macos-latest'
+        run: |
+          mv lib${{ env.PLUGIN_NAME }}.dylib ${{ env.PLUGIN_NAME }}_mac.dylib
+          install_name_tool -id ${{ env.PLUGIN_NAME }}_mac.dylib -change @rpath/QtWidgets.framework/Versions/5/QtWidgets @rpath/libQt5Widgets.dylib -change @rpath/QtGui.framework/Versions/5/QtGui @rpath/libQt5Gui.dylib -change @rpath/QtCore.framework/Versions/5/QtCore @rpath/libQt5Core.dylib ${{ env.PLUGIN_NAME }}_mac.dylib
       - name: Archive production artifacts
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: ${{ matrix.os }}${{ matrix.arch }}
-          path: TelegramWatchdog1.${{ matrix.os }}_${{ matrix.arch }}.dll
+          path: ${{ env.PLUGIN_NAME }}_[win|linux|mac]*.*
 
   release:
     needs: build
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v2
-      - name: Create Release
-        id: create_release
-        uses: actions/create-release@v1
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Download prebuild
+        uses: actions/download-artifact@v4
         with:
-          tag_name: ${{ github.ref }}
-          release_name: Release ${{ github.ref }}
-          draft: true
-          prerelease: false
+          name: prebuild
+          path: .
+      - name: Remove old artifacts
+        uses: geekyeggo/delete-artifact@v4
+        with:
+          name: prebuild
       - name: Create Tmp Folder
         run: |
           mkdir -p tmp
       - name: Collect artifacts
-        uses: actions/download-artifact@v3
+        uses: actions/download-artifact@v4
         with:
           path: tmp
       - name: Move artifacts to release
@@ -91,14 +92,15 @@ jobs:
       - name: Install zip
         uses: montudor/action-zip@v1
       - name: Zip output
-        run: zip -qq -r ../TelegramWatchdog.zip .
+        run: zip -qq -r ../${{ env.PLUGIN_NAME }}.zip .
         working-directory: deploy
-      - name: Upload artifacts
-        uses: actions/upload-release-asset@v1
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      - name: Rename release
+        run: |
+          mv ${{ env.PLUGIN_NAME }}.zip ${{ env.PLUGIN_NAME }}.${{ github.ref_name }}.ts3_plugin
+      - name: Release
+        uses: softprops/action-gh-release@v1
         with:
-          upload_url: ${{ steps.create_release.outputs.upload_url }}
-          asset_path: TelegramWatchdog.zip
-          asset_name: TelegramWatchdog.ts3_plugin
-          asset_content_type: application/zip
+          files: |
+            ./${{ env.PLUGIN_NAME }}.${{ github.ref_name }}.ts3_plugin
+          draft: false
+          prerelease: false
